@@ -1,6 +1,7 @@
 import gym
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
 from policy_net import Policy_net
 from ppo import PPOTrain
 
