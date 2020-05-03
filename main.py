@@ -11,7 +11,7 @@ GAMMA = 0.95
 
 
 def main():
-    env = gym.make('CartPole-v0')                   # Instacia o ambiente CartPole
+    env = gym.make('CartPole-v0')                   # Instancia o ambiente CartPole
     env.seed(0)                                     #
     ob_space = env.observation_space                # Descrevem o formato de observações válidas do espaço
     Policy = Policy_net('policy', env)              # Cria a rede de Politica
@@ -23,22 +23,22 @@ def main():
         writer = tf.summary.FileWriter('./log/train', sess.graph)   # Define diretório de logs
         sess.run(tf.global_variables_initializer())                 # Inicializa as redes
 
-        obs = env.reset()   # Reseta o ambiente e obtem a primeira observaçao
+        obs = env.reset()   # Reseta o ambiente e obtêm a primeira observação
         reward = 0          # Armazena as recompensas
         success_num = 0     # Contador de sucessos
 
         for episode in range(EPISODES): # Loop do episodio
-            observations = []           # Array pra armazenar as observaçoes
-            actions = []                # Array pra armazenar as açoes
-            v_preds = []                # Array pra armazenar as previsoes
+            observations = []           # Array pra armazenar as observações
+            actions = []                # Array pra armazenar as ações
+            v_preds = []                # Array pra armazenar as previsões
             rewards = []                # Array pra armazenar as recompensas
-            run_policy_steps = 0        # Contador de passos em cada epsodio
+            run_policy_steps = 0        # Contador de passos em cada episodio
             env.render()                # Renderiza o ambiente
 
             while True: # Run policy RUN_POLICY_STEPS which is much less than episode length
-                run_policy_steps += 1                               # Incrementa contador de passos de cada ep
+                run_policy_steps += 1                               # Incrementa contador de passos de cada episodio
                 obs = np.stack([obs]).astype(dtype=np.float32)      # prepare to feed placeholder Policy.obs
-                act, v_pred = Policy.act(obs=obs, stochastic=True)  # Corre a rede neural e obtem uma ação e o V previsto
+                act, v_pred = Policy.act(obs=obs, stochastic=True)  # Corre a rede neural e obtêm uma ação e o V previsto
 
                 act     = act.item()        # Transforma um array do numpy 
                 v_pred  = v_pred.item()     # em um objeto scalar do Python
@@ -48,17 +48,17 @@ def main():
                 v_preds.append(v_pred)      # Adiciona a v_pred ao buffer de v_pred
                 rewards.append(reward)      # Adiciona a recompensa ao buffer de recompensa
 
-                next_obs, reward, done, info = env.step(act)    # envia a ação ao ambiente e recebe a proxima observação, a recompensa e se o passo terminou
+                next_obs, reward, done, info = env.step(act)    # envia a ação ao ambiente e recebe a próxima observação, a recompensa e se o passo terminou
 
-                if done:                # Se o done for verdadero ...
+                if done:                # Se o done for verdadeiro ...
                     v_preds_next = v_preds[1:] + [0]  # next state of terminate state has 0 state value
                     obs = env.reset()   #   Redefine o ambiente
                     reward = -1         #   Subtrai 1 da recompensa (?)
                     break               #   Sai do loop while
-                else:                   # Senao...
-                    obs = next_obs      #   Armazena em obs a proxima observação
+                else:                   # Senão...
+                    obs = next_obs      #   Armazena em obs a próxima observação
 
-            # Armazena em log para vizualização no tensorboard
+            # Armazena em log para visualização no tensorboard
             writer.add_summary( 
                 tf.Summary(
                     value=[
@@ -68,18 +68,18 @@ def main():
                         )
                     ]
                 ),   
-                episode # Contador de eps
+                episode # Contador de episódios
             )
             writer.add_summary(
                 tf.Summary(
                     value=[
                         tf.Summary.Value(
-                            tag='episode_reward',       # Recompensa do ep
-                            simple_value=sum(rewards)   # soma de todas as recompensas do ep
+                            tag='episode_reward',       # Recompensa do episódios
+                            simple_value=sum(rewards)   # soma de todas as recompensas do episódios
                         )
                     ]
                 ),       
-                episode # Contador de eps
+                episode # Contador de episódios
             )
 
             # Condicional para finalizar o teste
@@ -89,7 +89,7 @@ def main():
                     saver.save(sess, './model/model.ckpt')  #       Salve a sessão
                     print('Clear!! Model saved.')           # 
                     break                                   #       Saia do loop
-            else:                                           # senao, 
+            else:                                           # senão, 
                 success_num = 0                             #   zera o contador de sucessos
 
             gaes = PPO.get_gaes(rewards=rewards, v_preds=v_preds, v_preds_next=v_preds_next) # ?
@@ -104,7 +104,7 @@ def main():
 
             PPO.assign_policy_parameters()
 
-            inp = [observations, actions, rewards, v_preds_next, gaes]  # Cria um array com 5 colunas: onservações, ações, recompensas, 
+            inp = [observations, actions, rewards, v_preds_next, gaes]  # Cria um array com 5 colunas: observações, ações, recompensas, 
 
             # Treina
             for epoch in range(4):
@@ -125,7 +125,7 @@ def main():
             )[0]
 
             writer.add_summary(summary, episode)
-        writer.close()  # Final do ep
+        writer.close()  # Final do episódios
 
 
 if __name__ == '__main__':
