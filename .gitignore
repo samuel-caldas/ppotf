@@ -1,5 +1,5 @@
 .idea/
-/.vs/slnx.sqlite
-/.vs/PythonSettings.json
-/.vs/ProjectSettings.json
-/.vs/ppo_tf/v16/.suo
+/.vs/
+/model/
+/__pycache__/
+/log/
