@@ -11,7 +11,7 @@ GAMMA = 0.95
 
 
 def main():
-    env = gym.make('CartPole-v0')
+    env = gym.make('CartPole-v1')
     env.seed(0)
     ob_space = env.observation_space
     Policy = Policy_net('policy', env)

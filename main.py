@@ -11,7 +11,7 @@ GAMMA = 0.95
 
 
 def main():
-    env         = gym.make('CartPole-v0')       # Instancia o ambiente CartPole
+    env         = gym.make('CartPole-v1')       # Instancia o ambiente CartPole
     env.seed(0)                                 #
     ob_space    = env.observation_space         # Descrevem o formato de observações válidas do espaço
     Policy      = Policy_net('policy', env)     # Cria a rede de Politica
@@ -36,6 +36,7 @@ def main():
             env.render()                # Renderiza o ambiente
 
             while True: # Run policy RUN_POLICY_STEPS which is much less than episode length
+                        # Execute a política RUN_POLICY_STEPS, que é muito menor que a duração do episódio
                 run_policy_steps += 1                               # Incrementa contador de passos de cada episodio
                 obs = np.stack([obs]).astype(dtype=np.float32)      # prepare to feed placeholder Policy.obs
                 act, v_pred = Policy.act(obs=obs, stochastic=True)  # Corre a rede neural e obtêm uma ação e o V previsto
@@ -51,7 +52,8 @@ def main():
                 next_obs, reward, done, info = env.step(act)    # envia a ação ao ambiente e recebe a próxima observação, a recompensa e se o passo terminou
 
                 if done:                # Se o done for verdadeiro ...
-                    v_preds_next = v_preds[1:] + [0]  # next state of terminate state has 0 state value
+                    v_preds_next = v_preds[1:] + [0]    # next state of terminate state has 0 state value
+                                                        # próximo estado do estado final tem 0 valor de estado
                     obs = env.reset()   #   Redefine o ambiente
                     reward = -1         #   Subtrai 1 da recompensa (?)
                     break               #   Sai do loop while
@@ -59,40 +61,36 @@ def main():
                     obs = next_obs      #   Armazena em obs a próxima observação
 
             # Armazena em log para visualização no tensorboard
-            writer.add_summary( 
-                tf.Summary(
-                    value=[
-                        tf.Summary.Value(
-                            tag='episode_length',           # Duração do episódio
-                            simple_value=run_policy_steps   # Contador de passos
-                        )
-                    ]
-                ),   
+            writer.add_summary(
+                tf.Summary(value=[
+                    tf.Summary.Value(
+                        tag='episode_length',           # Duração do episódio
+                        simple_value=run_policy_steps   # Contador de passos
+                    )
+                ]),
                 episode # Contador de episódios
             )
             writer.add_summary(
-                tf.Summary(
-                    value=[
-                        tf.Summary.Value(
-                            tag='episode_reward',       # Recompensa do episódios
-                            simple_value=sum(rewards)   # soma de todas as recompensas do episódios
-                        )
-                    ]
-                ),       
+                tf.Summary(value=[
+                    tf.Summary.Value(
+                        tag='episode_reward',       # Recompensa do episódios
+                        simple_value=sum(rewards)   # soma de todas as recompensas do episódios
+                    )
+                ]),       
                 episode # Contador de episódios
             )
 
             # Condicional para finalizar o teste
             if sum(rewards) >= 195:                         # Se a soma das recompensas for maior ou igual 195
-                success_num += 1                            #   Incrementa um no contador de sucessos
+                success_num += 1                            #   Incrementa o contador de sucessos
                 if success_num >= 100:                      #   Se ocorrerem 100 sucessos
-                    saver.save(sess, './model/model.ckpt')  #       Salve a sessão
-                    print('Clear!! Model saved.')           # 
-                    break                                   #       Saia do loop
+                    saver.save(sess, './model/model.ckpt')  #       Salva a sessão
+                    print('Clear!! Model saved.')           #       Escreve na tela
+                    break                                   #       Sai do loop
             else:                                           # senão, 
                 success_num = 0                             #   zera o contador de sucessos
             
-            print("EP: ",episode," Rw: ",sum(rewards))
+            print("EP: ",episode," Rw: ",sum(rewards))      # Escreve na tela o numero do episodio e a recompensa
 
             gaes = PPO.get_gaes(rewards=rewards, v_preds=v_preds, v_preds_next=v_preds_next) # ?
 
@@ -110,8 +108,10 @@ def main():
 
             # Treina
             for epoch in range(4):
-                sample_indices  = np.random.randint(low=0, high=observations.shape[0], size=64)  # indices's are in [low, high)
+                sample_indices  = np.random.randint(low=0, high=observations.shape[0], size=64)     # indices's are in [low, high)
+                                                                                                    # índices estão em [baixo, alto)
                 sampled_inp     = [np.take(a=a, indices=sample_indices, axis=0) for a in inp]       # sample training data
+                                                                                                    # amostra de dados de treinamento
                 PPO.train(  # Treina a rede com
                     obs         =sampled_inp[0],
                     actions     =sampled_inp[1],
@@ -132,7 +132,7 @@ def main():
                 summary, 
                 episode
             )
-        writer.close()  # Final do episódios
+        writer.close()  # Final do episódio
 
 
 if __name__ == '__main__':
