@@ -1,21 +1,21 @@
 # PPO_tf
-Implementation of proximal policy optimization(PPO) using tensorflow  
+Implementação da proximal policy optimization (PPO) usando tensorflow
 
-## environment
-CartPole-v0 of open ai gym  
-state space: continuous  
-action space: discrete  
+## Ambiente
+CartPole-v0 do open ai gym  
+espaço de estado: contínuo
+espaço de ação: discreto
 
-## dependencies
+## Dependencias
 python3.6\
 tensorflow v1.4\
 open ai gym
 
-## Training
+## Treinamento
 ```
 python main.py 
 ```
-## Test trained policy
+## Testar politica treinada
 ```
 python test_policy.py
 ```
@@ -23,5 +23,5 @@ python test_policy.py
 ```
 tensorboard --logdir=log
 ```
-## LICENSE
+## LICENÇA
 MIT ICENSE
