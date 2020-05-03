@@ -21,7 +21,8 @@ class PPOTrain:
         pi_trainable = self.Policy.get_trainable_variables()
         old_pi_trainable = self.Old_Policy.get_trainable_variables()
 
-        # assign_operations for policy parameter values to old policy parameters
+        # assign_operations for policy parameter values to old policy
+        # parameters
         with tf.variable_scope('assign_op'):
             self.assign_ops = []
             for v_old, v in zip(old_pi_trainable, pi_trainable):
@@ -62,8 +63,7 @@ class PPOTrain:
 
         # construct computation graph for loss of entropy bonus
         with tf.variable_scope('loss/entropy'):
-            entropy = -tf.reduce_sum(self.Policy.act_probs *
-                                     tf.log(tf.clip_by_value(self.Policy.act_probs, 1e-10, 1.0)), axis=1)
+            entropy = -tf.reduce_sum(self.Policy.act_probs * tf.log(tf.clip_by_value(self.Policy.act_probs, 1e-10, 1.0)), axis=1)
             entropy = tf.reduce_mean(entropy, axis=0)  # mean of entropy of pi(obs)
             tf.summary.scalar('entropy', entropy)
 
@@ -98,7 +98,8 @@ class PPOTrain:
 
     def get_gaes(self, rewards, v_preds, v_preds_next):
         deltas = [r_t + self.gamma * v_next - v for r_t, v_next, v in zip(rewards, v_preds_next, v_preds)]
-        # calculate generative advantage estimator(lambda = 1), see ppo paper eq(11)
+        # calculate generative advantage estimator(lambda = 1), see ppo paper
+        # eq(11)
         gaes = copy.deepcopy(deltas)
         for t in reversed(range(len(gaes) - 1)):  # is T-1, where T is time step which run policy
             gaes[t] = gaes[t] + self.gamma * gaes[t + 1]

@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+# Train
 import gym
 import numpy as np
 import tensorflow.compat.v1 as tf
@@ -22,6 +22,7 @@ def main():
     with tf.Session() as sess:
         writer = tf.summary.FileWriter('./log/train', sess.graph)
         sess.run(tf.global_variables_initializer())
+
         obs = env.reset()
         reward = 0
         success_num = 0
@@ -32,13 +33,14 @@ def main():
             v_preds = []
             rewards = []
             run_policy_steps = 0
+            env.render()   
             while True:  # run policy RUN_POLICY_STEPS which is much less than episode length
                 run_policy_steps += 1
                 obs = np.stack([obs]).astype(dtype=np.float32)  # prepare to feed placeholder Policy.obs
                 act, v_pred = Policy.act(obs=obs, stochastic=True)
 
-                act = np.asscalar(act)
-                v_pred = np.asscalar(v_pred)
+                act     = act.item()
+                v_pred  = v_pred.item()
 
                 observations.append(obs)
                 actions.append(act)
@@ -60,6 +62,7 @@ def main():
             writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag='episode_reward', simple_value=sum(rewards))])
                                , iteration)
 
+            # end condition of test
             if sum(rewards) >= 195:
                 success_num += 1
                 if success_num >= 100:
@@ -85,19 +88,19 @@ def main():
 
             # train
             for epoch in range(4):
-                sample_indices = np.random.randint(low=0, high=observations.shape[0], size=64)  # indices are in [low, high)
+                sample_indices = np.random.randint(low=0, high=observations.shape[0], size=64)  # indices's are in [low, high)
                 sampled_inp = [np.take(a=a, indices=sample_indices, axis=0) for a in inp]  # sample training data
                 PPO.train(obs=sampled_inp[0],
-                          actions=sampled_inp[1],
-                          rewards=sampled_inp[2],
-                          v_preds_next=sampled_inp[3],
-                          gaes=sampled_inp[4])
+                    actions=sampled_inp[1],
+                    rewards=sampled_inp[2],
+                    v_preds_next=sampled_inp[3],
+                    gaes=sampled_inp[4])
 
             summary = PPO.get_summary(obs=inp[0],
-                                      actions=inp[1],
-                                      rewards=inp[2],
-                                      v_preds_next=inp[3],
-                                      gaes=inp[4])[0]
+                actions=inp[1],
+                rewards=inp[2],
+                v_preds_next=inp[3],
+                gaes=inp[4])[0]
 
             writer.add_summary(summary, iteration)
         writer.close()

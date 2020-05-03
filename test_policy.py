@@ -1,3 +1,4 @@
+# test
 import gym
 import numpy as np
 import tensorflow.compat.v1 as tf
@@ -32,13 +33,14 @@ def main():
             v_preds = []
             rewards = []
             run_policy_steps = 0
+            env.render()
             while True:  # run policy RUN_POLICY_STEPS which is much less than episode length
                 run_policy_steps += 1
                 obs = np.stack([obs]).astype(dtype=np.float32)  # prepare to feed placeholder Policy.obs
                 act, v_pred = Policy.act(obs=obs, stochastic=False)
 
-                act = np.asscalar(act)
-                v_pred = np.asscalar(v_pred)
+                act     = act.item()
+                v_pred  = v_pred.item()
 
                 observations.append(obs)
                 actions.append(act)
@@ -48,7 +50,7 @@ def main():
                 next_obs, reward, done, info = env.step(act)
 
                 if done:
-                    v_preds_next = v_preds[1:] + [0]  # next state of terminate state has value 0
+                    v_preds_next = v_preds[1:] + [0]  # next state of terminate state has 0 state value
                     obs = env.reset()
                     reward = -1
                     break

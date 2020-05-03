@@ -29,7 +29,7 @@ class Policy_net:
                 layer_2 = tf.layers.dense(inputs=layer_1, units=20, activation=tf.tanh)
                 self.v_preds = tf.layers.dense(inputs=layer_2, units=1, activation=None)
 
-            self.act_stochastic = tf.multinomial(tf.log(self.act_probs), num_samples=1)
+            self.act_stochastic = tf.random.categorical(tf.log(self.act_probs), num_samples=1)
             self.act_stochastic = tf.reshape(self.act_stochastic, shape=[-1])
 
             self.act_deterministic = tf.argmax(self.act_probs, axis=1)
