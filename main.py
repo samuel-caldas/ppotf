@@ -6,7 +6,7 @@ tf.disable_v2_behavior()
 from policy_net import Policy_net
 from ppo import PPOTrain
 
-ITERATION = int(1e5)
+EPISODES = int(1e5)
 GAMMA = 0.95
 
 
@@ -21,21 +21,21 @@ def main():
 
     with tf.Session() as sess:
         writer = tf.summary.FileWriter('./log/train', sess.graph)
-        sess.run(tf.global_variables_initializer())
+        sess.run(tf.global_variables_initializer()) # Inicializa as redes
 
-        obs = env.reset()
-        reward = 0
+        obs = env.reset()   # Reseta o ambiente e obtem a primeira observaçao
+        reward = 0          # Armazena as recompensas
         success_num = 0
 
-        for iteration in range(ITERATION):  # episode
-            observations = []
-            actions = []
-            v_preds = []
-            rewards = []
-            run_policy_steps = 0
-            env.render()   
-            while True:  # run policy RUN_POLICY_STEPS which is much less than episode length
-                run_policy_steps += 1
+        for iteration in range(EPISODES):  # Loop do episodio
+            observations = []   # Array pra armazenar as observaçoes
+            actions = []        # Array pra armazenar as açoes
+            v_preds = []        # Array pra armazenar as previsoes
+            rewards = []        # Array pra armazenar as recompensas
+            run_policy_steps = 0# Contador de passos em cada epsodio
+            env.render()        # Renderiza o ambiente
+            while True:         # run policy RUN_POLICY_STEPS which is much less than episode length
+                run_policy_steps += 1   # Incrementa contador de passos de cada ep
                 obs = np.stack([obs]).astype(dtype=np.float32)  # prepare to feed placeholder Policy.obs
                 act, v_pred = Policy.act(obs=obs, stochastic=True)
 
