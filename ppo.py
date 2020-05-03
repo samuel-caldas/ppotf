@@ -72,25 +72,35 @@ class PPOTrain:
             loss = -loss  # minimize -loss == maximize loss
             tf.summary.scalar('loss', loss)
 
-        self.merged = tf.summary.merge_all()
-        optimizer = tf.train.AdamOptimizer(learning_rate=1e-4, epsilon=1e-5)
-        self.train_op = optimizer.minimize(loss, var_list=pi_trainable)
+        self.merged     = tf.summary.merge_all()
+        optimizer       = tf.train.AdamOptimizer(learning_rate=1e-4, epsilon=1e-5)
+        self.train_op   = optimizer.minimize(loss, var_list=pi_trainable)
 
-    def train(self, obs, actions, rewards, v_preds_next, gaes):
-        tf.get_default_session().run([self.train_op], feed_dict={self.Policy.obs: obs,
-                                                                 self.Old_Policy.obs: obs,
-                                                                 self.actions: actions,
-                                                                 self.rewards: rewards,
-                                                                 self.v_preds_next: v_preds_next,
-                                                                 self.gaes: gaes})
+    def train(self, obs, actions, rewards, v_preds_next, gaes): # Função de treinamento
+        tf.get_default_session().run(
+            [self.train_op], 
+            feed_dict={
+                self.Policy.obs: obs,
+                self.Old_Policy.obs: obs,
+                self.actions: actions,
+                self.rewards: rewards,
+                self.v_preds_next: v_preds_next,
+                self.gaes: gaes
+            }
+        )
 
-    def get_summary(self, obs, actions, rewards, v_preds_next, gaes):
-        return tf.get_default_session().run([self.merged], feed_dict={self.Policy.obs: obs,
-                                                                      self.Old_Policy.obs: obs,
-                                                                      self.actions: actions,
-                                                                      self.rewards: rewards,
-                                                                      self.v_preds_next: v_preds_next,
-                                                                      self.gaes: gaes})
+    def get_summary(self, obs, actions, rewards, v_preds_next, gaes):   # Obtem o sumário
+        return tf.get_default_session().run(
+            [self.merged], 
+            feed_dict={
+                self.Policy.obs: obs,
+                self.Old_Policy.obs: obs,
+                self.actions: actions,
+                self.rewards: rewards,
+                self.v_preds_next: v_preds_next,
+                self.gaes: gaes
+            }
+        )
 
     def assign_policy_parameters(self):
         # assign policy parameter values to old policy parameters

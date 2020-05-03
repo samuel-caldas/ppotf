@@ -11,13 +11,13 @@ GAMMA = 0.95
 
 
 def main():
-    env = gym.make('CartPole-v0')                   # Instancia o ambiente CartPole
-    env.seed(0)                                     #
-    ob_space = env.observation_space                # Descrevem o formato de observações válidas do espaço
-    Policy = Policy_net('policy', env)              # Cria a rede de Politica
-    Old_Policy = Policy_net('old_policy', env)      # Cria a rede de politica antiga
-    PPO = PPOTrain(Policy, Old_Policy, gamma=GAMMA) #
-    saver = tf.train.Saver()                        #
+    env         = gym.make('CartPole-v0')       # Instancia o ambiente CartPole
+    env.seed(0)                                 #
+    ob_space    = env.observation_space         # Descrevem o formato de observações válidas do espaço
+    Policy      = Policy_net('policy', env)     # Cria a rede de Politica
+    Old_Policy  = Policy_net('old_policy', env) # Cria a rede de politica antiga
+    PPO         = PPOTrain(Policy, Old_Policy, gamma=GAMMA)
+    saver       = tf.train.Saver()              #
 
     with tf.Session() as sess:  # Bloco da sessão 
         writer = tf.summary.FileWriter('./log/train', sess.graph)   # Define diretório de logs
@@ -91,6 +91,8 @@ def main():
                     break                                   #       Saia do loop
             else:                                           # senão, 
                 success_num = 0                             #   zera o contador de sucessos
+            
+            print("EP: ",episode," Rw: ",sum(rewards))
 
             gaes = PPO.get_gaes(rewards=rewards, v_preds=v_preds, v_preds_next=v_preds_next) # ?
 
@@ -108,23 +110,28 @@ def main():
 
             # Treina
             for epoch in range(4):
-                sample_indices = np.random.randint(low=0, high=observations.shape[0], size=64)  # indices's are in [low, high)
-                sampled_inp = [np.take(a=a, indices=sample_indices, axis=0) for a in inp]       # sample training data
-                PPO.train(obs=sampled_inp[0],
-                    actions=sampled_inp[1],
-                    rewards=sampled_inp[2],
+                sample_indices  = np.random.randint(low=0, high=observations.shape[0], size=64)  # indices's are in [low, high)
+                sampled_inp     = [np.take(a=a, indices=sample_indices, axis=0) for a in inp]       # sample training data
+                PPO.train(  # Treina a rede com
+                    obs         =sampled_inp[0],
+                    actions     =sampled_inp[1],
+                    rewards     =sampled_inp[2],
                     v_preds_next=sampled_inp[3],
-                    gaes=sampled_inp[4])
+                    gaes        =sampled_inp[4]
+                )
 
             summary = PPO.get_summary(
-                obs=inp[0],
-                actions=inp[1],
-                rewards=inp[2],
+                obs         =inp[0],
+                actions     =inp[1],
+                rewards     =inp[2],
                 v_preds_next=inp[3],
-                gaes=inp[4]
+                gaes        =inp[4]
             )[0]
 
-            writer.add_summary(summary, episode)
+            writer.add_summary(
+                summary, 
+                episode
+            )
         writer.close()  # Final do episódios
 
 
