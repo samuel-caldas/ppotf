@@ -114,7 +114,9 @@ class PPOTrain:
         return tf.get_default_session().run(self.assign_ops)
 
     def get_gaes(self, rewards, v_preds, v_preds_next):
-        deltas = [r_t + self.gamma * v_next - v for r_t, v_next, v in zip(rewards, v_preds_next, v_preds)]
+        deltas = []
+        for r_t, v_next, v in zip(rewards, v_preds_next, v_preds):
+            deltas.append(r_t + self.gamma * v_next - v)
         # calculate generative advantage estimator(lambda = 1), see ppo paper eq(11)
         # calcular o estimador de vantagem generativa (lambda = 1), consulte o documento ppo eq(11)
         gaes = copy.deepcopy(deltas)

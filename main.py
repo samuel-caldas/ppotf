@@ -9,7 +9,6 @@ from ppo import PPOTrain
 EPISODES = int(1e5)
 GAMMA = 0.95
 
-
 def main():
     env         = gym.make('CartPole-v1')       # Instancia o ambiente CartPole
     env.seed(0)                                 #
@@ -52,33 +51,19 @@ def main():
                 next_obs, reward, done, info = env.step(act)    # envia a ação ao ambiente e recebe a próxima observação, a recompensa e se o passo terminou
 
                 if done:                # Se o done for verdadeiro ...
-                    v_preds_next = v_preds[1:] + [0]    # next state of terminate state has 0 state value
+
+                    v_preds_next = v_preds[1:] + [0]    # [1:] seleciona do segundo elemento da lista em diante e + [0] adiciona um elemento de valor zero no final da lista
+                                                        # next state of terminate state has 0 state value
                                                         # próximo estado do estado final tem 0 valor de estado
                     obs = env.reset()   #   Redefine o ambiente
-                    reward = -1         #   Subtrai 1 da recompensa (?)
+                    reward = -1         #   define a recompensa como -1 (?)
                     break               #   Sai do loop while
                 else:                   # Senão...
                     obs = next_obs      #   Armazena em obs a próxima observação
 
             # Armazena em log para visualização no tensorboard
-            writer.add_summary(
-                tf.Summary(value=[
-                    tf.Summary.Value(
-                        tag='episode_length',           # Duração do episódio
-                        simple_value=run_policy_steps   # Contador de passos
-                    )
-                ]),
-                episode # Contador de episódios
-            )
-            writer.add_summary(
-                tf.Summary(value=[
-                    tf.Summary.Value(
-                        tag='episode_reward',       # Recompensa do episódios
-                        simple_value=sum(rewards)   # soma de todas as recompensas do episódios
-                    )
-                ]),       
-                episode # Contador de episódios
-            )
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag='episode_length', simple_value=run_policy_steps)]), episode)
+            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag='episode_reward', simple_value=sum(rewards))]),     episode)
 
             # Condicional para finalizar o teste
             if sum(rewards) >= 195:                         # Se a soma das recompensas for maior ou igual 195
@@ -95,12 +80,15 @@ def main():
             gaes = PPO.get_gaes(rewards=rewards, v_preds=v_preds, v_preds_next=v_preds_next) # ?
 
             # Converte lista em NPArray para alimentar o tf.placeholder
-            observations    = np.reshape(observations, newshape=[-1] + list(ob_space.shape))
-            actions         = np.array(actions).astype(dtype=np.int32)
-            rewards         = np.array(rewards).astype(dtype=np.float32)
-            v_preds_next    = np.array(v_preds_next).astype(dtype=np.float32)
-            gaes            = np.array(gaes).astype(dtype=np.float32)
-            gaes            = (gaes - gaes.mean()) / gaes.std()
+            newshape=[-1] + list(ob_space.shape) # cria um array [-1, 4]
+            observations = np.reshape(observations, newshape=newshape) # antes, cada linha de observations era um array idependente. depois do reshape, observations passou ser um array só com varias linhas.
+            
+            actions      = np.array(actions).astype(dtype=np.int32)
+            
+            rewards      = np.array(rewards).astype(dtype=np.float32)
+            v_preds_next = np.array(v_preds_next).astype(dtype=np.float32)
+            gaes         = np.array(gaes).astype(dtype=np.float32)
+            gaes         = (gaes - gaes.mean()) / gaes.std() # subtrai dos itens de gaes a media de todos os itens de gaes e divide todos pelo desvio padrao de gaes
 
             PPO.assign_policy_parameters()
 
@@ -108,30 +96,15 @@ def main():
 
             # Treina
             for epoch in range(4):
-                sample_indices  = np.random.randint(low=0, high=observations.shape[0], size=64)     # indices's are in [low, high)
-                                                                                                    # índices estão em [baixo, alto)
-                sampled_inp     = [np.take(a=a, indices=sample_indices, axis=0) for a in inp]       # sample training data
-                                                                                                    # amostra de dados de treinamento
-                PPO.train(  # Treina a rede com
-                    obs         =sampled_inp[0],
-                    actions     =sampled_inp[1],
-                    rewards     =sampled_inp[2],
-                    v_preds_next=sampled_inp[3],
-                    gaes        =sampled_inp[4]
-                )
+                sample_indices  = np.random.randint(low=0, high=observations.shape[0], size=64) # índices estão em [baixo, alto]
+                sampled_inp=[]
+                for a in inp:
+                    sampled_inp.append(np.take(a=a, indices=sample_indices, axis=0))    # amostra de dados de treinamento
+                PPO.train(obs=sampled_inp[0], actions=sampled_inp[1], rewards=sampled_inp[2], v_preds_next=sampled_inp[3], gaes=sampled_inp[4])
 
-            summary = PPO.get_summary(
-                obs         =inp[0],
-                actions     =inp[1],
-                rewards     =inp[2],
-                v_preds_next=inp[3],
-                gaes        =inp[4]
-            )[0]
+            summary = PPO.get_summary(obs=inp[0],actions=inp[1],rewards=inp[2],v_preds_next=inp[3],gaes=inp[4])[0]
 
-            writer.add_summary(
-                summary, 
-                episode
-            )
+            writer.add_summary(summary, episode)
         writer.close()  # Final do episódio
 
 

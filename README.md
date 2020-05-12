@@ -1,5 +1,6 @@
 # PPO_tf
 Implementação da proximal policy optimization (PPO) usando tensorflow
+com comentários em português
 
 ## Ambiente
 CartPole-v0 do open ai gym  
@@ -24,4 +25,4 @@ python test_policy.py
 tensorboard --logdir=log
 ```
 ## LICENÇA
-MIT ICENSE
+MIT LICENSE
