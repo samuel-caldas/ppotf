@@ -119,9 +119,9 @@ class PPOTrain:
             deltas.append(r_t + self.gamma * v_next - v)
         # calculate generative advantage estimator(lambda = 1), see ppo paper eq(11)
         # calcular o estimador de vantagem generativa (lambda = 1), consulte o documento ppo eq(11)
-        gaes = copy.deepcopy(deltas)
-        for t in reversed(range(len(gaes) - 1)):    # is T-1, where T is time step which run policy
-                                                    # é T-1, onde T é o intervalo de tempo que executa a política
+        #gaes = copy.deepcopy(deltas)
+        gaes = deltas
+        for t in reversed(range(len(gaes) - 1)):    # é T-1, onde T é o intervalo de tempo que executa a política
             gaes[t] = gaes[t] + self.gamma * gaes[t + 1]
         return gaes
 
