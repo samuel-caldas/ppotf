@@ -1,8 +1,9 @@
 # test
 import gym
 import numpy as np
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+import tensorflow as tf
+#import tensorflow.compat.v1 as tf
+#tf.disable_v2_behavior()
 from policy_net import Policy_net
 from ppo import PPOTrain
 
@@ -17,11 +18,11 @@ def main():
     Policy = Policy_net('policy', env)
     Old_Policy = Policy_net('old_policy', env)
     PPO = PPOTrain(Policy, Old_Policy, gamma=GAMMA)
-    saver = tf.train.Saver()
+    saver = tf.compat.v1.train.Saver()
 
-    with tf.Session() as sess:
-        writer = tf.summary.FileWriter('./log/test', sess.graph)
-        sess.run(tf.global_variables_initializer())
+    with tf.compat.v1.Session() as sess:
+        writer = tf.compat.v1.summary.FileWriter('./log/test', sess.graph)
+        sess.run(tf.compat.v1.global_variables_initializer())
         saver.restore(sess, 'model/model.ckpt')
         obs = env.reset()
         reward = 0
@@ -57,9 +58,9 @@ def main():
                 else:
                     obs = next_obs
 
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag='episode_length', simple_value=run_policy_steps)])
+            writer.add_summary(tf.compat.v1.Summary(value=[tf.compat.v1.Summary.Value(tag='episode_length', simple_value=run_policy_steps)])
                                , iteration)
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag='episode_reward', simple_value=sum(rewards))])
+            writer.add_summary(tf.compat.v1.Summary(value=[tf.compat.v1.Summary.Value(tag='episode_reward', simple_value=sum(rewards))])
                                , iteration)
 
             # end condition of test

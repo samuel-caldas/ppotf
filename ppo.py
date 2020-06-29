@@ -1,5 +1,6 @@
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+import tensorflow as tf
+#import tensorflow.compat.v1 as tf
+#tf.disable_v2_behavior()
 import copy
 
 
@@ -23,18 +24,18 @@ class PPOTrain:
 
         # assign_operations for policy parameter values to old policy parameters
         # atribuir operações para valores de parâmetros de política a parâmetros de política antigos
-        with tf.variable_scope('assign_op'):
+        with tf.compat.v1.variable_scope('assign_op'):
             self.assign_ops = []
             for v_old, v in zip(old_pi_trainable, pi_trainable):
-                self.assign_ops.append(tf.assign(v_old, v))
+                self.assign_ops.append(tf.compat.v1.assign(v_old, v))
 
         # inputs for train_op
         # inputs para train_op
-        with tf.variable_scope('train_inp'):
-            self.actions        = tf.placeholder(dtype=tf.int32, shape=[None], name='actions')
-            self.rewards        = tf.placeholder(dtype=tf.float32, shape=[None], name='rewards')
-            self.v_preds_next   = tf.placeholder(dtype=tf.float32, shape=[None], name='v_preds_next')
-            self.gaes           = tf.placeholder(dtype=tf.float32, shape=[None], name='gaes')
+        with tf.compat.v1.variable_scope('train_inp'):
+            self.actions        = tf.compat.v1.placeholder(dtype=tf.int32, shape=[None], name='actions')
+            self.rewards        = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None], name='rewards')
+            self.v_preds_next   = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None], name='v_preds_next')
+            self.gaes           = tf.compat.v1.placeholder(dtype=tf.float32, shape=[None], name='gaes')
 
         act_probs = self.Policy.act_probs
         act_probs_old = self.Old_Policy.act_probs
@@ -42,48 +43,48 @@ class PPOTrain:
         # probabilities of actions which agent took with policy
         # probabilidades de ações que o agente executou com a política
         act_probs = act_probs * tf.one_hot(indices=self.actions, depth=act_probs.shape[1])
-        act_probs = tf.reduce_sum(act_probs, axis=1)
+        act_probs = tf.reduce_sum(input_tensor=act_probs, axis=1)
 
         # probabilities of actions which agent took with old policy
         # probabilidades de ações que o agente executou com a política antiga
         act_probs_old = act_probs_old * tf.one_hot(indices=self.actions, depth=act_probs_old.shape[1])
-        act_probs_old = tf.reduce_sum(act_probs_old, axis=1)
+        act_probs_old = tf.reduce_sum(input_tensor=act_probs_old, axis=1)
 
-        with tf.variable_scope('loss/clip'):
+        with tf.compat.v1.variable_scope('loss/clip'):
             # ratios = tf.divide(act_probs, act_probs_old)
-            ratios          = tf.exp(tf.log(act_probs) - tf.log(act_probs_old))
+            ratios          = tf.exp(tf.math.log(act_probs) - tf.math.log(act_probs_old))
             clipped_ratios  = tf.clip_by_value(ratios, clip_value_min=1 - clip_value, clip_value_max=1 + clip_value)
             loss_clip       = tf.minimum(tf.multiply(self.gaes, ratios), tf.multiply(self.gaes, clipped_ratios))
-            loss_clip       = tf.reduce_mean(loss_clip)
-            tf.summary.scalar('loss_clip', loss_clip)
+            loss_clip       = tf.reduce_mean(input_tensor=loss_clip)
+            tf.compat.v1.summary.scalar('loss_clip', loss_clip)
 
         # construct computation graph for loss of value function
         # constrói gráfico de cálculo para perda da função de valor
-        with tf.variable_scope('loss/vf'):
+        with tf.compat.v1.variable_scope('loss/vf'):
             v_preds = self.Policy.v_preds
-            loss_vf = tf.squared_difference(self.rewards + self.gamma * self.v_preds_next, v_preds)
-            loss_vf = tf.reduce_mean(loss_vf)
-            tf.summary.scalar('loss_vf', loss_vf)
+            loss_vf = tf.math.squared_difference(self.rewards + self.gamma * self.v_preds_next, v_preds)
+            loss_vf = tf.reduce_mean(input_tensor=loss_vf)
+            tf.compat.v1.summary.scalar('loss_vf', loss_vf)
 
         # construct computation graph for loss of entropy bonus
         # construir gráfico de computação para perda de bônus de entropia
-        with tf.variable_scope('loss/entropy'):
-            entropy = -tf.reduce_sum(self.Policy.act_probs * tf.log(tf.clip_by_value(self.Policy.act_probs, 1e-10, 1.0)), axis=1)
-            entropy = tf.reduce_mean(entropy, axis=0)   # mean of entropy of pi(obs)
+        with tf.compat.v1.variable_scope('loss/entropy'):
+            entropy = -tf.reduce_sum(input_tensor=self.Policy.act_probs * tf.math.log(tf.clip_by_value(self.Policy.act_probs, 1e-10, 1.0)), axis=1)
+            entropy = tf.reduce_mean(input_tensor=entropy, axis=0)   # mean of entropy of pi(obs)
                                                         # média de entropia de pi (obs)
-            tf.summary.scalar('entropy', entropy)
+            tf.compat.v1.summary.scalar('entropy', entropy)
 
-        with tf.variable_scope('loss'):
+        with tf.compat.v1.variable_scope('loss'):
             loss = loss_clip - c_1 * loss_vf + c_2 * entropy
             loss = -loss  # minimize -loss == maximize loss
-            tf.summary.scalar('loss', loss)
+            tf.compat.v1.summary.scalar('loss', loss)
 
-        self.merged     = tf.summary.merge_all()
-        optimizer       = tf.train.AdamOptimizer(learning_rate=1e-4, epsilon=1e-5)
+        self.merged     = tf.compat.v1.summary.merge_all()
+        optimizer       = tf.compat.v1.train.AdamOptimizer(learning_rate=1e-4, epsilon=1e-5)
         self.train_op   = optimizer.minimize(loss, var_list=pi_trainable)
 
     def train(self, obs, actions, rewards, v_preds_next, gaes): # Função de treinamento
-        tf.get_default_session().run(
+        tf.compat.v1.get_default_session().run(
             [self.train_op], 
             feed_dict={
                 self.Policy.obs: obs,
@@ -96,7 +97,7 @@ class PPOTrain:
         )
 
     def get_summary(self, obs, actions, rewards, v_preds_next, gaes):   # Obtém o sumário
-        return tf.get_default_session().run(
+        return tf.compat.v1.get_default_session().run(
             [self.merged], 
             feed_dict={
                 self.Policy.obs: obs,
@@ -111,7 +112,7 @@ class PPOTrain:
     def assign_policy_parameters(self):
         # assign policy parameter values to old policy parameters
         # Atribuir valores de parâmetro de política a parâmetros de política antigos
-        return tf.get_default_session().run(self.assign_ops)
+        return tf.compat.v1.get_default_session().run(self.assign_ops)
 
     def get_gaes(self, rewards, v_preds, v_preds_next):
         deltas = []

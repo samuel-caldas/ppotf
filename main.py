@@ -1,8 +1,9 @@
 # Train
 import gym
 import numpy as np
-import tensorflow.compat.v1 as tf
-tf.disable_v2_behavior()
+import tensorflow as tf
+#import tensorflow.compat.v1 as tf
+#tf.disable_v2_behavior()
 from policy_net import Policy_net
 from ppo import PPOTrain
 
@@ -16,11 +17,11 @@ def main():
     Policy      = Policy_net('policy', env)     # Cria a rede de Politica
     Old_Policy  = Policy_net('old_policy', env) # Cria a rede de politica antiga
     PPO         = PPOTrain(Policy, Old_Policy, gamma=GAMMA)
-    saver       = tf.train.Saver()              #
+    saver       = tf.compat.v1.train.Saver()              #
 
-    with tf.Session() as sess:  # Bloco da sessão 
-        writer = tf.summary.FileWriter('./log/train', sess.graph)   # Define diretório de logs
-        sess.run(tf.global_variables_initializer())                 # Inicializa as redes
+    with tf.compat.v1.Session() as sess:  # Bloco da sessão 
+        writer = tf.compat.v1.summary.FileWriter('./log/train', sess.graph)   # Define diretório de logs
+        sess.run(tf.compat.v1.global_variables_initializer())                 # Inicializa as redes
 
         obs = env.reset()   # Reseta o ambiente e obtêm a primeira observação
         reward = 0          # Armazena as recompensas
@@ -62,8 +63,8 @@ def main():
                     obs = next_obs      #   Armazena em obs a próxima observação
 
             # Armazena em log para visualização no tensorboard
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag='episode_length', simple_value=run_policy_steps)]), episode)
-            writer.add_summary(tf.Summary(value=[tf.Summary.Value(tag='episode_reward', simple_value=sum(rewards))]),     episode)
+            writer.add_summary(tf.compat.v1.Summary(value=[tf.compat.v1.Summary.Value(tag='episode_length', simple_value=run_policy_steps)]), episode)
+            writer.add_summary(tf.compat.v1.Summary(value=[tf.compat.v1.Summary.Value(tag='episode_reward', simple_value=sum(rewards))]),     episode)
 
             # Condicional para finalizar o teste
             if sum(rewards) >= 195:                         # Se a soma das recompensas for maior ou igual 195
