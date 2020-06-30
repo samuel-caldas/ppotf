@@ -10,6 +10,7 @@ from ppo import PPOTrain
 ENV = 'LunarLander-v2'
 #ENV = 'CartPole-v0'
 #ENV = 'CartPole-v1'
+#ENV = 'Pendulum-v0'
 
 EPISODES = int(1e5)
 GAMMA = 0.95
