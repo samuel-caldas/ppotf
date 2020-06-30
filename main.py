@@ -7,9 +7,9 @@ from policy_net import Policy_net
 from ppo import PPOTrain
 
 #ENV = 'Breakout-ram-v0'
-ENV = 'LunarLander-v2'
+#ENV = 'LunarLander-v2'
 #ENV = 'CartPole-v0'
-#ENV = 'CartPole-v1'
+ENV = 'CartPole-v1'
 #ENV = 'Pendulum-v0'
 
 EPISODES = int(1e5)
