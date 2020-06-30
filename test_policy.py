@@ -6,12 +6,16 @@ tf.disable_v2_behavior()
 from policy_net import Policy_net
 from ppo import PPOTrain
 
+#ENV = 'Breakout-ram-v0'
+ENV = 'LunarLander-v2'
+#ENV = 'CartPole-v0'
+#ENV = 'CartPole-v1'
+
 ITERATION = int(3 * 10e5)
 GAMMA = 0.95
 
-
 def main():
-    env = gym.make('CartPole-v1')
+    env = gym.make(ENV)
     env.seed(0)
     ob_space = env.observation_space
     Policy = Policy_net('policy', env)
